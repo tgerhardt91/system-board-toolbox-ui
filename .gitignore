@@ -78,19 +78,4 @@ Thumbs.db
 
 # ------------------------------------------------------
 # Others
-# ------------------------------------------------------
-*.swp
-*.swo
-*.bak
-*.backup
-*.orig
-*.rej
-
-# Local development server files
-*.local
-
-# Optional: yarn / npm integrity files
-.yarn-integrity
-
-# Optional: pnpm store
-.pnpm-store/
+# --------------------------------------

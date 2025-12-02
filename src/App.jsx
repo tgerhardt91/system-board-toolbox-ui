@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import TensionBoardSelector from "./components/TensionBoardSelector.jsx";
 import { tb2MirrorHolds } from "./data/holds.jsx";
 import { useSendHolds } from "./hooks/useSendHolds.js";
+import { getDisplayGrade } from "./utils.js"
 
 export default function App() {
   const [selection, setSelection] = useState([]);
@@ -62,6 +63,13 @@ export default function App() {
     setPage(0);
     setHasMore(true);
     await loadClimbs(0);
+  }
+
+  function renderStars(q) {
+  const max = 3;
+  const filled = "★".repeat(q || 0);
+  const empty = "☆".repeat(max - (q || 0));
+  return filled + empty;
   }
 
   // --------------------------------------------
@@ -220,14 +228,17 @@ export default function App() {
                   }}
                 >
                   <div style={{ fontWeight: 700 }}>
-                    {c.name || c.uuid}
+                    {c.name + " - " + getDisplayGrade(c.difficulty)}
+                  </div>
+                  <div style={{ fontSize: 14, color: "#ffe083", marginTop: 4 }}>
+                    {renderStars(c.quality)}
                   </div>
                   <div style={{ fontSize: 13 }}>
-                    Setter: {c.setter || "—"} • Layout: {c.layout || "—"}
+                    Setter: {c.setter || "—"} • Ascents: {c.ascentionistCount || "—"}
                   </div>
                   {c.noMatching && (
                     <div style={{ fontSize: 12, color: "crimson" }}>
-                      Marked noMatching
+                      No Matching
                     </div>
                   )}
                 </div>

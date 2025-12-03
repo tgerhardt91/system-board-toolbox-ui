@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import TensionBoardSelector from "./components/TensionBoardSelector.jsx";
 import { tb2MirrorHolds } from "./data/holds.jsx";
 import { useSendHolds } from "./hooks/useSendHolds.js";
-import { getDisplayGrade } from "./utils.js"
+import { difficultyOptions, getDisplayGrade } from "./utils.js"
 
 export default function App() {
   const [selection, setSelection] = useState([]);
@@ -17,7 +17,12 @@ export default function App() {
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
 
+  const [difficultyMin, setDifficultyMin] = useState(0);
+  const [difficultyMax, setDifficultyMax] = useState(difficultyOptions.length - 1);
+
   const [isFilterActive, setIsFilterActive] = useState(false);
+
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   const loaderRef = useRef(null);
 
@@ -33,7 +38,9 @@ export default function App() {
       selection,
       setter,
       includeClimbsWithMirroredHolds,
-      requireTypeMatch
+      requireTypeMatch,
+      difficultyMin,
+      difficultyMax
     );
 
     if (!result || !result.items) return;
@@ -153,8 +160,97 @@ export default function App() {
                   />
                 </div>
 
-                <div style={{ marginTop: 12 }}>
-                  <label style={{ display: "flex", gap: 8 }}>
+                <div style={{ marginTop: 20 }}>
+                <strong>Difficulty Range (Min/Max)</strong>
+
+                <div style={{
+                  display: "flex",
+                  gap: 8,
+                  marginTop: 8
+                }}>
+                  {/* Min */}
+                  <select
+                    value={difficultyMin}
+                    onChange={(e) => {
+                      const val = Number(e.target.value);
+                      if (val <= difficultyMax) setDifficultyMin(val);
+                    }}
+                    style={{
+                      flex: 1,
+                      padding: "6px 8px",
+                      borderRadius: 6,
+                      fontSize: 14,
+                      background: "#222",
+                      color: "#eee",
+                      border: "1px solid #444"
+                    }}
+                  >
+                    {difficultyOptions.map((label, idx) => (
+                      <option key={idx} value={idx}>
+                        {label}
+                      </option>
+                    ))}
+                  </select>
+
+                  <span style={{ alignSelf: "center", color: "#ddd" }}>→</span>
+
+                  {/* Max */}
+                  <select
+                    value={difficultyMax}
+                    onChange={(e) => {
+                      const val = Number(e.target.value);
+                      if (val >= difficultyMin) setDifficultyMax(val);
+                    }}
+                    style={{
+                      flex: 1,
+                      padding: "6px 8px",
+                      borderRadius: 6,
+                      fontSize: 14,
+                      background: "#222",
+                      color: "#eee",
+                      border: "1px solid #444"
+                    }}
+                  >
+                    {difficultyOptions.map((label, idx) => (
+                      <option key={idx} value={idx}>
+                        {label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Advanced Options Toggle */}
+              <div style={{ marginTop: 16 }}>
+                <button
+                  onClick={() => setShowAdvanced((prev) => !prev)}
+                  style={{
+                    width: "100%",
+                    padding: "6px 10px",
+                    background: "#2c2c2c",
+                    color: "#fff",
+                    border: "1px solid #444",
+                    borderRadius: 6,
+                    cursor: "pointer",
+                    textAlign: "left"
+                  }}
+                >
+                  {showAdvanced ? "▼" : "▶"} Advanced Options
+                </button>
+              </div>
+
+              {/* Collapsable Advanced Options section */}
+              {showAdvanced && (
+                <div
+                  style={{
+                    marginTop: 10,
+                    padding: "10px 12px",
+                    background: "#1e1e1e",
+                    borderRadius: 6,
+                    border: "1px solid #333"
+                  }}
+                >
+                  <label style={{ display: "flex", alignItems: "center", gap: 8 }}>
                     <input
                       type="checkbox"
                       checked={includeClimbsWithMirroredHolds}
@@ -162,10 +258,15 @@ export default function App() {
                     />
                     Include climbs with mirrored holds
                   </label>
-                </div>
 
-                <div style={{ marginTop: 12 }}>
-                  <label style={{ display: "flex", gap: 8 }}>
+                  <label
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 8,
+                      marginTop: 10
+                    }}
+                  >
                     <input
                       type="checkbox"
                       checked={requireTypeMatch}
@@ -174,6 +275,7 @@ export default function App() {
                     Require exact match on hold type
                   </label>
                 </div>
+              )}
 
                 <button
                   disabled={loading || selection.length === 0}
@@ -184,7 +286,7 @@ export default function App() {
                     border: "1px solid #ccc",
                     cursor: loading ? "default" : "pointer",
                     width: "100%",
-                    marginTop: 8
+                    marginTop: 20
                   }}
                 >
                   {loading ? "Filtering..." : "Filter climbs by selection"}
@@ -232,6 +334,9 @@ export default function App() {
                   </div>
                   <div style={{ fontSize: 14, color: "#ffe083", marginTop: 4 }}>
                     {renderStars(c.quality)}
+                  </div>
+                  <div style={{ fontSize: 13 }}>
+                    Angle: {c.angle || "—"}
                   </div>
                   <div style={{ fontSize: 13 }}>
                     Setter: {c.setter || "—"} • Ascents: {c.ascentionistCount || "—"}

@@ -6,10 +6,12 @@ export function useSendHolds(apiUrl) {
   const [response, setResponse] = useState(null);
 
   const sendHolds = useCallback(
-    async (page, holds, setter, includeMirrored, requireTypeMatch) => {
+    async (page, holds, setter, includeMirrored, requireTypeMatch, difficultyMin, difficultyMax) => {
       setLoading(true);
       setError(null);
       setResponse(null);
+
+      const gradeOffset = 10;
 
       const holdFrames = holds.map(h => `${h.id}r${h.roleId}`);
 
@@ -20,7 +22,9 @@ export function useSendHolds(apiUrl) {
         setter: setter || null,
         includeClimbsWithMirroredHolds: includeMirrored,
         holdFrames: holdFrames,
-        requireTypeMatch: requireTypeMatch
+        requireTypeMatch: requireTypeMatch,
+        minGrade: difficultyMin + gradeOffset,
+        maxGrade: difficultyMax + gradeOffset
       };
 
       try {

@@ -20,6 +20,8 @@ export default function App() {
   const [difficultyMin, setDifficultyMin] = useState(0);
   const [difficultyMax, setDifficultyMax] = useState(difficultyOptions.length - 1);
 
+  const [angle, setAngle] = useState(40);
+
   const [isFilterActive, setIsFilterActive] = useState(false);
 
   const [showAdvanced, setShowAdvanced] = useState(false);
@@ -40,7 +42,8 @@ export default function App() {
       includeClimbsWithMirroredHolds,
       requireTypeMatch,
       difficultyMin,
-      difficultyMax
+      difficultyMax,
+      angle
     );
 
     if (!result || !result.items) return;
@@ -73,11 +76,13 @@ export default function App() {
   }
 
   function renderStars(q) {
-  const max = 3;
-  const filled = "★".repeat(q || 0);
-  const empty = "☆".repeat(max - (q || 0));
-  return filled + empty;
+    const max = 3;
+    const filled = "★".repeat(q || 0);
+    const empty = "☆".repeat(max - (q || 0));
+    return filled + empty;
   }
+
+  const angleOptions = [15, 20, 25, 30, 35, 40, 45, 50, 55, 60]
 
   // --------------------------------------------
   // Infinite scroll observer
@@ -143,6 +148,30 @@ export default function App() {
             {displayMode === "filter" && (
               <div>
                 <div style={{ marginTop: 20 }}>
+                  <label><strong>Angle  </strong></label>
+                  <select
+                    value={angle}
+                    onChange={(e) => {
+                      setAngle(e.target.value);
+                    }}
+                    style={{
+                      flex: 1,
+                      padding: "6px 8px",
+                      borderRadius: 6,
+                      fontSize: 14,
+                      background: "#101010ff",
+                      color: "#eee",
+                      border: "1px solid #444"
+                    }}
+                  >
+                    {angleOptions.map((angle) => (
+                      <option key={angle} value={angle}>
+                        {angle}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div style={{ marginTop: 20 }}>
                   <label><strong>Setter</strong></label>
                   <input
                     type="text"
@@ -180,9 +209,9 @@ export default function App() {
                       padding: "6px 8px",
                       borderRadius: 6,
                       fontSize: 14,
-                      background: "#222",
+                      background: "#000000ff",
                       color: "#eee",
-                      border: "1px solid #444"
+                      border: "1px solid #333333ff"
                     }}
                   >
                     {difficultyOptions.map((label, idx) => (
@@ -206,9 +235,9 @@ export default function App() {
                       padding: "6px 8px",
                       borderRadius: 6,
                       fontSize: 14,
-                      background: "#222",
+                      background: "#000000ff",
                       color: "#eee",
-                      border: "1px solid #444"
+                      border: "1px solid #3b3b3bff"
                     }}
                   >
                     {difficultyOptions.map((label, idx) => (
@@ -334,9 +363,6 @@ export default function App() {
                   </div>
                   <div style={{ fontSize: 14, color: "#ffe083", marginTop: 4 }}>
                     {renderStars(c.quality)}
-                  </div>
-                  <div style={{ fontSize: 13 }}>
-                    Angle: {c.angle || "—"}
                   </div>
                   <div style={{ fontSize: 13 }}>
                     Setter: {c.setter || "—"} • Ascents: {c.ascentionistCount || "—"}

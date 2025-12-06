@@ -20,6 +20,9 @@ export default function TensionBoardSelector({
   const [selected, setSelected] = useState([]);
   const [holdClicks, setHoldClicks] = useState(new Map());
 
+  const radius = window.innerWidth < 600 ? 32 : 22;
+  const strokeWidth = window.innerWidth < 600 ? 6 : 4;
+
   // Scale stage based on screen height
   useEffect(() => {
     if (image) {
@@ -139,51 +142,51 @@ export default function TensionBoardSelector({
 
   // Handle clicking an already-selected hold (Circle click)
   function handleHoldClick(e, hold) {
-  e.cancelBubble = true;
+    e.cancelBubble = true;
 
-  // Update click count for this hold
-  setHoldClicks((prev) => {
-    const next = new Map(prev);
-    const prevCount = next.get(hold.id) || 1;
-    next.set(hold.id, prevCount + 1);
-    return next;
-  });
+    // Update click count for this hold
+    setHoldClicks((prev) => {
+      const next = new Map(prev);
+      const prevCount = next.get(hold.id) || 1;
+      next.set(hold.id, prevCount + 1);
+      return next;
+    });
 
-  setSelected((prev) => {
-    const rawPrevCount = holdClicks.get(hold.id) || 1;
-    const clicks = rawPrevCount + 1;
-    const exists = prev.some((h) => h.id === hold.id);
+    setSelected((prev) => {
+      const rawPrevCount = holdClicks.get(hold.id) || 1;
+      const clicks = rawPrevCount + 1;
+      const exists = prev.some((h) => h.id === hold.id);
 
-    if (!exists) {
-      return [
-        ...prev,
-        { ...hold, roleId: hold.defaultRoleId }
-      ];
-    }
+      if (!exists) {
+        return [
+          ...prev,
+          { ...hold, roleId: hold.defaultRoleId }
+        ];
+      }
 
-    const newRole = getNextRole(hold, clicks);
+      const newRole = getNextRole(hold, clicks);
 
-    // FIX: When deselecting, reset click counter
-    if (newRole === null) {
-      const nextSel = prev.filter((h) => h.id !== hold.id);
+      // FIX: When deselecting, reset click counter
+      if (newRole === null) {
+        const nextSel = prev.filter((h) => h.id !== hold.id);
 
-      setHoldClicks(prev => {
-        const nextMap = new Map(prev);
-        nextMap.set(hold.id, 0);   // 🔥 reset
-        return nextMap;
-      });
+        setHoldClicks(prev => {
+          const nextMap = new Map(prev);
+          nextMap.set(hold.id, 0);   // 🔥 reset
+          return nextMap;
+        });
+
+        onSelectionChange?.(nextSel);
+        return nextSel;
+      }
+
+      const nextSel = prev.map((h) =>
+        h.id === hold.id ? { ...h, roleId: newRole } : h
+      );
 
       onSelectionChange?.(nextSel);
       return nextSel;
-    }
-
-    const nextSel = prev.map((h) =>
-      h.id === hold.id ? { ...h, roleId: newRole } : h
-    );
-
-    onSelectionChange?.(nextSel);
-    return nextSel;
-  });
+    });
 }
 
   // Handle clicking empty board background (Stage click)
@@ -257,7 +260,6 @@ export default function TensionBoardSelector({
           width={image.width * stageScale}
           height={image.height * stageScale}
           onClick={onStageClick}
-          draggable
         >
           <Layer>
             <KonvaImage image={image} />
@@ -288,10 +290,11 @@ export default function TensionBoardSelector({
                     key={"sel-" + h.id}
                     x={px}
                     y={py}
-                    radius={22}
+                    radius={radius}
                     stroke={getColorByRoleId(h.roleId)}
-                    strokeWidth={5}
+                    strokeWidth={strokeWidth}
                     onClick={(e) => handleHoldClick(e, h)}
+                    onTap={(e) => handleHoldClick(e, h)}
                   />
                 );
               })}

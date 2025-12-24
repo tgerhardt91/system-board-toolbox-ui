@@ -14,6 +14,7 @@ export function useSendHolds(apiUrl) {
       const gradeOffset = 10;
 
       const holdFrames = holds.map(h => `${h.id}r${h.roleId}`);
+      const angleSelection = angle == "Any" ? null : angle;
 
       const payload = {
         page,
@@ -25,7 +26,7 @@ export function useSendHolds(apiUrl) {
         requireTypeMatch: requireTypeMatch,
         minGrade: difficultyMin + gradeOffset,
         maxGrade: difficultyMax + gradeOffset,
-        angle: angle
+        angle: angleSelection
       };
 
       try {

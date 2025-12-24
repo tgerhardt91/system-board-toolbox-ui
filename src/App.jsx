@@ -33,7 +33,7 @@ export default function App() {
   const { sendHolds, loading, error } =
     useSendHolds("http://localhost:8080/api/v1/hold");
 
-  const angleOptions = [15, 20, 25, 30, 35, 40, 45, 50, 55, 60];
+const angleOptions = [15, 20, 25, 30, 35, 40, 45, 50, 55, 60, "Any"];
 
   async function loadClimbs(requestedPage = 0) {
     const result = await sendHolds(
@@ -74,6 +74,14 @@ export default function App() {
     await loadClimbs(0);
 
     setActiveTab("climbs");
+  }
+
+  function setSelectedAngle(angle) {
+    if(angle == "Any") {
+      setAngle("Any");
+    } else {
+      setAngle(Number(angle));
+    }
   }
 
   function renderStars(q) {
@@ -216,12 +224,11 @@ export default function App() {
                   border: "1px solid #333"
                 }}
               >
-                {/* Angle */}
                 <div style={{ marginBottom: 12 }}>
                   <label><strong>Angle</strong></label>
                   <select
                     value={angle}
-                    onChange={e => setAngle(Number(e.target.value))}
+                    onChange={e => setSelectedAngle(e.target.value)}
                     style={{
                       width: "100%",
                       marginTop: 6,
@@ -238,7 +245,6 @@ export default function App() {
                   </select>
                 </div>
 
-                {/* Setter */}
                 <div style={{ marginBottom: 20 }}>
                   <label><strong>Setter</strong></label>
                   <input
@@ -257,7 +263,6 @@ export default function App() {
                   />
                 </div>
 
-                {/* Difficulty INLINE */}
                 <strong>Difficulty Range</strong>
                 <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
                   <select
@@ -328,7 +333,6 @@ export default function App() {
           </div>
         )}
 
-        {/* ───────── CLIMBS TAB ───────── */}
         {activeTab === "climbs" && (
           <div style={{
             display: "block",
@@ -338,8 +342,6 @@ export default function App() {
             overflowY: "auto",
             maxHeight: "calc(100vh - 60px)"
           }}>
-
-            {/* If climb selected: show climb view */}
             {activeClimb && (
               <>
                 <button
@@ -422,7 +424,7 @@ export default function App() {
                     }}
                   >
                     <div style={{ fontWeight: 700 }}>
-                      {c.name} — {getDisplayGrade(c.difficulty)}
+                      {c.name} — {getDisplayGrade(c.difficulty)} @{c.angle}
                     </div>
                     <div style={{ fontSize: 14, color: "#ffe083", marginTop: 4 }}>
                       {renderStars(c.quality)}

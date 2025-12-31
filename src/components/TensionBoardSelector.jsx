@@ -10,7 +10,8 @@ export default function TensionBoardSelector({
   imageUrl = "/tension2.png",
   onSelectionChange,
   activeClimb,
-  displayMode = "filter"
+  displayMode = "filter",
+  onSizeChange
 }) {
   const [image] = useImage(imageUrl);
 
@@ -23,14 +24,28 @@ export default function TensionBoardSelector({
   const radius = window.innerWidth < 600 ? 32 : 22;
   const strokeWidth = window.innerWidth < 600 ? 6 : 4;
 
-  // Scale stage based on screen height
+  // Scale stage to fit available space (centered, responsive)
   useEffect(() => {
-    if (image) {
-      const maxH = window.innerHeight * 0.8;
-      const scale = maxH / image.height;
+    if (!image) return;
+
+    function updateScale() {
+      // Use more of the viewport - 90% height, 95% width
+      const maxH = window.innerHeight * 0.9;
+      const maxW = window.innerWidth * 0.95;
+
+      // Calculate scale based on both dimensions, pick the smaller to fit
+      const scaleByHeight = maxH / image.height;
+      const scaleByWidth = maxW / image.width;
+      const scale = Math.min(scaleByHeight, scaleByWidth);
+
       setStageScale(scale);
+      onSizeChange?.(image.width * scale);
     }
-  }, [image]);
+
+    updateScale();
+    window.addEventListener("resize", updateScale);
+    return () => window.removeEventListener("resize", updateScale);
+  }, [image, onSizeChange]);
 
   // Hold lookup table
   const holdMap = useMemo(() => {
@@ -251,7 +266,7 @@ export default function TensionBoardSelector({
   }, [activeFrames, holdMap]);
 
   return (
-    <div >
+    <div style={{ display: "flex", justifyContent: "center", width: "100%" }}>
       {image && (
         <Stage
           ref={stageRef}

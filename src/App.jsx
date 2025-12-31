@@ -30,6 +30,8 @@ export default function App() {
   const [isFilterActive, setIsFilterActive] = useState(false);
   const loaderRef = useRef(null);
 
+  const [boardWidth, setBoardWidth] = useState(null);
+
   const { sendHolds, loading, error } =
     useSendHolds("http://localhost:8080/api/v1/hold");
 
@@ -121,50 +123,55 @@ const angleOptions = [15, 20, 25, 30, 35, 40, 45, 50, 55, 60, "Any"];
         overflowX: "hidden"
       }}
     >
-      {/* ───────── TAB BAR (full width) ───────── */}
 <div
   style={{
     display: "flex",
-    justifyContent: "space-around",
+    justifyContent: "center",
     background: "#222",
     borderBottom: "1px solid #333",
     position: "sticky",
     top: 0,
     zIndex: 50,
-    width: "100vw"
+    width: "100%"
   }}
 >
-  {["filter", "climbs"].map(tab => (
-    <div
-      key={tab}
-      onClick={() => setActiveTab(tab)}
-      style={{
-        padding: "12px 16px",
-        cursor: "pointer",
-        fontWeight: activeTab === tab ? 700 : 400,
-        color: activeTab === tab ? "#4caf50" : "#aaa",
-        borderBottom:
-          activeTab === tab ? "2px solid #4caf50" : "2px solid transparent",
-      }}
-    >
-      {tab.toUpperCase()}
-    </div>
-  ))}
+  <div
+    style={{
+      display: "flex",
+      justifyContent: "space-around",
+      width: boardWidth || "100%",
+      maxWidth: boardWidth || 900
+    }}
+  >
+    {["filter", "climbs"].map(tab => (
+      <div
+        key={tab}
+        onClick={() => setActiveTab(tab)}
+        style={{
+          padding: "12px 16px",
+          cursor: "pointer",
+          fontWeight: activeTab === tab ? 700 : 400,
+          color: activeTab === tab ? "#4caf50" : "#aaa",
+          borderBottom:
+            activeTab === tab ? "2px solid #4caf50" : "2px solid transparent",
+        }}
+      >
+        {tab.toUpperCase()}
+      </div>
+    ))}
+  </div>
 </div>
 
-{/* ───────── CENTERED CONTENT WRAPPER ───────── */}
 <div
   style={{
     width: "100%",
-    maxWidth: 900,
+    maxWidth: activeTab === "climbs" && !activeClimb ? 900 : "none",
     margin: "0 auto",
-    padding: 16,
+    padding: activeTab === "filter" || activeClimb ? 8 : 16,
     boxSizing: "border-box"
   }}
 >
 
-
-        {/* ───────── FILTER TAB ───────── */}
         <div style={{ display: activeTab === "filter" ? "block" : "none" }}>
           <TensionBoardSelector
             holds={tb2MirrorHolds}
@@ -172,12 +179,18 @@ const angleOptions = [15, 20, 25, 30, 35, 40, 45, 50, 55, 60, "Any"];
             activeClimb={activeClimb}
             imageUrl="/tension2.png"
             displayMode={"filter"}
+            onSizeChange={setBoardWidth}
           />
         </div>
 
         {activeTab === "filter" && (
-          <div style={{ padding: 16 }}>
-            {/* BOARD */}
+          <div style={{
+            padding: 16,
+            width: boardWidth || "100%",
+            maxWidth: boardWidth || 900,
+            margin: "0 auto",
+            boxSizing: "border-box"
+          }}>
             {/* FILTER button */}
             <button
               disabled={loading || selection.length === 0}
@@ -344,64 +357,81 @@ const angleOptions = [15, 20, 25, 30, 35, 40, 45, 50, 55, 60, "Any"];
           }}>
             {activeClimb && (
               <>
-                <button
-                  onClick={() => setActiveClimb(null)}
-                  style={{
-                    marginBottom: 16,
-                    padding: "6px 10px",
-                    background: "#333",
-                    color: "#fff",
-                    borderRadius: 6,
-                    border: "1px solid #444",
-                    cursor: "pointer"
-                  }}
-                >
-                  ← Back to climbs
-                </button>
+                <div style={{
+                  width: boardWidth || "100%",
+                  maxWidth: boardWidth || 900,
+                  margin: "0 auto",
+                  marginBottom: 16
+                }}>
+                  <button
+                    onClick={() => setActiveClimb(null)}
+                    style={{
+                      padding: "6px 10px",
+                      background: "#333",
+                      color: "#fff",
+                      borderRadius: 6,
+                      border: "1px solid #444",
+                      cursor: "pointer"
+                    }}
+                  >
+                    ← Back to climbs
+                  </button>
+                </div>
 
                 <TensionBoardSelector
                   holds={tb2MirrorHolds}
                   activeClimb={activeClimb}
                   imageUrl="/tension2.png"
                   displayMode="climb"
+                  onSizeChange={setBoardWidth}
                 />
 
-                <h2 style={{ marginTop: 16 }}>{activeClimb.name}</h2>
-                <div style={{ fontSize: 14, color: "#bbb" }}>
-                  Setter: {activeClimb.setter || "—"}
-                </div>
+                <div style={{
+                  width: boardWidth || "100%",
+                  maxWidth: boardWidth || 900,
+                  margin: "0 auto",
+                  marginTop: 16
+                }}>
+                  <h2 style={{ margin: 0 }}>{activeClimb.name}</h2>
+                  <div style={{ fontSize: 14, color: "#bbb" }}>
+                    Setter: {activeClimb.setter || "—"}
+                  </div>
 
-                <div style={{ fontSize: 14, marginTop: 8 }}>
-                  Grade: {getDisplayGrade(activeClimb.difficulty)}
-                </div>
+                  <div style={{ fontSize: 14, marginTop: 8 }}>
+                    Grade: {getDisplayGrade(activeClimb.difficulty)}
+                  </div>
 
-                <div style={{ fontSize: 14, color: "#ffe083", marginTop: 4 }}>
-                  {renderStars(activeClimb.quality)}
-                </div>
+                  <div style={{ fontSize: 14, color: "#ffe083", marginTop: 4 }}>
+                    {renderStars(activeClimb.quality)}
+                    {activeClimb.isClassic && (
+                      " classic"
+                    )}
+                  </div>
 
-                <div style={{ fontSize: 13, marginTop: 6 }}>
-                  Ascents: {activeClimb.ascentionistCount ?? "—"}
-                </div>
+                  <div style={{ fontSize: 13, marginTop: 6 }}>
+                    Ascents: {activeClimb.ascentionistCount ?? "—"}
+                  </div>
 
-                <button
-                  onClick={() => setActiveClimb(null)}
-                  style={{
-                    marginTop: 20,
-                    width: "100%",
-                    padding: "10px 14px",
-                    borderRadius: 8,
-                    border: "1px solid #555",
-                    background: "#444",
-                    color: "#fff",
-                    cursor: "pointer"
-                  }}
-                >
-                  ← Back to climbs
-                </button>
+                  <button
+                    onClick={() => setActiveClimb(null)}
+                    style={{
+                      marginTop: 20,
+                      width: "100%",
+                      padding: "10px 14px",
+                      borderRadius: 8,
+                      border: "1px solid #555",
+                      background: "#444",
+                      color: "#fff",
+                      cursor: "pointer"
+                    }}
+                  >
+                    ← Back to climbs
+                  </button>
+                </div>
               </>
             )}
 
-            {/* If NO climb selected: show climb list */}
+            {/* If no climb selected: show climb list */}
             {!activeClimb && (
               <>
                 {error && (
@@ -428,6 +458,9 @@ const angleOptions = [15, 20, 25, 30, 35, 40, 45, 50, 55, 60, "Any"];
                     </div>
                     <div style={{ fontSize: 14, color: "#ffe083", marginTop: 4 }}>
                       {renderStars(c.quality)}
+                      {c.isClassic && (
+                      " classic"
+                    )}
                     </div>
                     <div style={{ fontSize: 13, color: "#ddd" }}>
                       Setter: {c.setter || "—"} • Ascents: {c.ascentionistCount || "—"}
